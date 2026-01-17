@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC Rechner | Takacs + Partner AG</title>
+    <style>
+        :root {
+            --primary: #e74c3c; /* Kräftiges Rot aus dem Logo */
+            --dark: #2c3e50; /* Dunkelgrau/Schwarz */
+            --light: #ecf0f1;
+            --white: #ffffff;
+            --accent-black: #000000; /* Reines Schwarz für den Header */
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: var(--white);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border-top: 10px solid var(--primary);
+        }
+
+        .header {
+            background: var(--accent-black);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+        }
+
+        .logo-text {
+            text-align: right;
+        }
+
+        .logo-text h1 { margin: 0; font-size: 1.8rem; color: var(--primary); letter-spacing: 2px; }
+        .logo-text h2 { margin: 5px 0 0; font-size: 1rem; font-weight: 300; }
+        .logo-text h3 { margin: 5px 0 0; font-size: 0.9rem; font-weight: normal; color: var(--light); }
+        .header p { margin: 15px 0 0; font-size: 0.8rem; opacity: 0.8; }
+
+        .content { padding: 25px; }
+        .form-group { margin-bottom: 18px; position: relative; } /* Added position relative for dropdown positioning */
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
+
+        /* Styling for the wood selection box */
+        .wood-select-list {
+            position: absolute;
+            z-index: 10;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: var(--white);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            display: none; /* Wichtig: Standardmässig versteckt */
+        }
+        .wood-select-list option {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .wood-select-list option:hover {
+            background-color: var(--light);
+        }
+        .wood-select-list option:last-child {
+            border-bottom: none;
+        }
+
+        .search-box {
+            background: #fff9f4;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary);
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: #c0392b; }
+
+        .results {
+            margin-top: 25px;
+            background: var(--light);
+            border-radius: 10px;
+            padding: 20px;
+            display: none;
+        }
+
+        .res-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #bdc3c7;
+        }
+
+        .res-item:last-child { border-bottom: none; }
+
+        .res-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .unit { font-size: 0.8rem; color: #7f8c8d; margin-left: 5px; }
+
+        small { color: #7f8c8d; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="logo-text">
+            <h1>SCHREINEREI</h1>
+            <h2>TAKACS + PARTNER AG</h2>
+            <h3>CNC Schnittdatenrechner</h3>
+            <p>KÜCHE, BAD, HOLZBAU.</p>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="form-group search-box">
+            <label for="woodSearch">🔍 Material wählen (Vc in m/min):</label>
+            <input type="text" id="woodSearch" placeholder="Eiche, Buche, MDF suchen..." onfocus="showWoods()" onblur="hideWoods()" onkeyup="filterWoods()">
+            
+            <select id="woodSelect" class="wood-select-list" size="5" onclick="selectWood()" onblur="hideWoods()">
+                <option value="3600">Ahorn weich (3600)</option>
+                <option value="2400">Ahorn hart (2400)</option>
+                <option value="1800">Birke (1800)</option>
+                <option value="2100">Buche (2100)</option>
+                <option value="2400">Eiche (2400)</option>
+                <option value="3000">Erle (3000)</option>
+                <option value="3500">Fichte / Tanne (3500)</option>
+                <option value="1200">MDF roh (1200)</option>
+                <option value="900">MDF beschichtet (900)</option>
+                <option value="1800">Nussbaum (1800)</option>
+                <option value="4500">Pappel (4500)</option>
+                <option value="800">Spanplatte (800)</option>
+            </select>
+        </div>
+
+        <input type="hidden" id="vc"> 
+
+        <div class="form-group">
+            <label>Werkzeug-Durchmesser (mm)</label>
+            <input type="number" id="diameter" value="250">
+        </div>
+
+        <div class="form-group">
+            <label>Anzahl Zähne (Z)</label>
+            <input type="number" id="teeth" value="48">
+        </div>
+
+        <div class="form-group">
+            <label>Vorschub pro Zahn (fz mm)</label>
+            <input type="number" id="fz" step="0.01" value="0.05">
+            <small>Definiert die "Abreibung" oder Spanabnahme pro Zahn.</small>
+        </div>
+
+        <button onclick="calculate()">WERTE BERECHNEN</button>
+
+        <div class="results" id="output">
+            <div class="res-item">
+                <span>Drehzahl (n):</span>
+                <div><span id="res-n" class="res-val">0</span><span class="unit">U/min</span></div>
+            </div>
+            <div class="res-item">
+                <span>Vorschub (Vf):</span>
+                <div><span id="res-vf" class="res-val">0</span><span class="unit">m/min</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showWoods() {
+        document.getElementById('woodSelect').style.display = 'block';
+    }
+
+    function hideWoods() {
+        // Fügt eine kleine Verzögerung hinzu, damit der Klick auf die Option noch registriert wird, bevor es verschwindet
+        setTimeout(() => {
+             // Versteckt die Liste nur, wenn das Input-Feld leer ist
+            if (document.getElementById('woodSearch').value === '') {
+                document.getElementById('woodSelect').style.display = 'none';
+            }
+        }, 150); 
+    }
+
+    function filterWoods() {
+        const input = document.getElementById('woodSearch').value.toLowerCase();
+        const select = document.getElementById('woodSelect');
+        const options = select.getElementsByTagName('option');
+
+        let foundMatch = false;
+        for (let i = 0; i < options.length; i++) {
+            const txt = options[i].text.toLowerCase();
+            if (txt.startsWith(input)) {
+                options[i].style.display = "";
+                foundMatch = true;
+            } else {
+                options[i].style.display = "none";
+            }
+        }
+        
+        // Zeigt die Liste an, sobald man tippt, auch wenn man den Fokus verliert
+        if (input.length > 0 && foundMatch) {
+             document.getElementById('woodSelect').style.display = 'block';
+        }
+    }
+
+    function selectWood() {
+        const select = document.getElementById('woodSelect');
+        document.getElementById('vc').value = select.value;
+        document.getElementById('woodSearch').value = select.options[select.selectedIndex].text.split(' (')[0]; 
+        // Versteckt die Liste nach der Auswahl sofort
+        document.getElementById('woodSelect').style.display = 'none'; 
+    }
+
+    function calculate() {
+        const vc = parseFloat(document.getElementById('vc').value); 
+        const d = parseFloat(document.getElementById('diameter').value);
+        const z = parseFloat(document.getElementById('teeth').value);
+        const fz = parseFloat(document.getElementById('fz').value);
+
+        if (vc && d && z && fz && d > 0) {
+            const n = (vc * 1000) / (d * Math.PI);
+            const vf = (n * z * fz) / 1000;
+
+            document.getElementById('res-n').innerText = Math.round(n);
+            document.getElementById('res-vf').innerText = vf.toFixed(2);
+            document.getElementById('output').style.display = 'block';
+            
+            window.scrollTo(0, document.body.scrollHeight);
+        } else {
+            alert("Bitte Material auswählen und alle Felder ausfüllen!");
+        }
+    }
+</script>
+
+</body>
+</html>
